@@ -1,0 +1,81 @@
+##################################
+# GENERAL SYSTEM & EDITOR IGNORE
+##################################
+
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# IDEs
+.idea/
+*.iml
+
+# Environment files
+.env
+.env.*
+
+##################################
+# GIT
+##################################
+.git/
+*.seed
+
+##################################
+# NODE / NEXT.JS (Avatar-Orchestrator)
+##################################
+**/node_modules/
+**/.next/
+**/.vscode/
+**/dist/
+**/out/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/pnpm-debug.log*
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+##################################
+# PYTHON / COQUI-TTS
+##################################
+
+# Bytecode / Cache
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.mypy_cache/
+
+# Virtual environments
+**/.venv/
+**/venv/
+
+# Docker volumes (model cache, speaker wavs)
+coqui-tts/coqui-cache/
+coqui-tts/coqui-speaker/
+coqui-tts/.models.json
+
+# Build artifacts
+**/*.pid
+**/*.sqlite3
+
+##################################
+# DOCKER
+##################################
+
+docker-compose.override.yml
+**/Dockerfile.*
+**/build/
+**/.docker/
+
+##################################
+# OPTIONAL: OS Files (Windows/mac)
+##################################
+
+ehthumbs.db
+Icon?
+Desktop.ini
+

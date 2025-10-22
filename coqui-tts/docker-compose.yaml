@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  tts:
+    image: coqui-tts
+    container_name: coqui-tts
+    build: .  # Build from local Dockerfile (which runs your custom server.py)
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./coqui-cache:/root/.local/share/tts       # Model cache folder
+      - ./coqui-speaker:/data                      # Speaker WAV input folder
+      - ./templates:/app/templates                 # dummt template since using api only
+    environment:
+      - COQUI_TOS_AGREED=1                         # Required to run Coqui models
+    restart: unless-stopped
