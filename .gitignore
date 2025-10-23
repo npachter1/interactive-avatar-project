@@ -13,6 +13,7 @@ Thumbs.db
 # IDEs
 .idea/
 *.iml
+.vscode/
 
 # Environment files
 .env
@@ -29,7 +30,6 @@ Thumbs.db
 ##################################
 **/node_modules/
 **/.next/
-**/.vscode/
 **/dist/
 **/out/
 **/npm-debug.log*
@@ -40,7 +40,7 @@ Thumbs.db
 **/pnpm-lock.yaml
 
 ##################################
-# PYTHON / COQUI-TTS
+# PYTHON / COQUI-TTS / LIVE-SPEECH-PORTRAIT
 ##################################
 
 # Bytecode / Cache
@@ -48,24 +48,61 @@ Thumbs.db
 **/*.py[cod]
 **/*.egg-info/
 **/.mypy_cache/
+**/.pytest_cache/
+**/.ipynb_checkpoints/
 
 # Virtual environments
 **/.venv/
 **/venv/
+env/
+.venv/
 
-# Docker volumes (model cache, speaker wavs)
+# Build artifacts and DBs
+**/*.pid
+**/*.sqlite3
+build/
+dist/
+
+# Model weights / checkpoints / generated data
+checkpoints/
+**/checkpoints/
+*.pt
+*.pth
+*.pkl
+*.npz
+*.npy
+*.mat
+*.h5
+
+# Large generated content
+results/
+tmp/
+logs/
+*.avi
+*.mp4
+*.wav
+*.mp3
+*.mov
+
+# Project data (ignore actual datasets, keep placeholders)
+data/
+!data/.gitkeep
+!data/README.md
+
+# Config files (keep example templates only)
+config/*.yaml
+!config/*.yaml.example
+
+##################################
+# COQUI-TTS DOCKER VOLUMES
+##################################
 coqui-tts/coqui-cache/
 coqui-tts/coqui-speaker/
 coqui-tts/.models.json
 
-# Build artifacts
-**/*.pid
-**/*.sqlite3
-
 ##################################
 # DOCKER
 ##################################
-
 docker-compose.override.yml
 **/Dockerfile.*
 **/build/
@@ -74,8 +111,6 @@ docker-compose.override.yml
 ##################################
 # OPTIONAL: OS Files (Windows/mac)
 ##################################
-
 ehthumbs.db
 Icon?
 Desktop.ini
-
