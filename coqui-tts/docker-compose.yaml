@@ -11,6 +11,7 @@ services:
       - ./coqui-cache:/root/.local/share/tts       # Model cache folder
       - ./coqui-speaker:/data                      # Speaker WAV input folder
       - ./templates:/app/templates                 # dummt template since using api only
+      - ./coqui-utils:/app/utils
     environment:
       - COQUI_TOS_AGREED=1                         # Required to run Coqui models
     restart: unless-stopped

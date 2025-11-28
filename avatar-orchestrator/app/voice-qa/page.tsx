@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function VoiceQA() {
   const [recording, setRecording] = useState(false);
@@ -12,6 +12,12 @@ export default function VoiceQA() {
   const [questionText, setQuestionText] = useState("");
   const [answerText, setAnswerText] = useState("");
 
+  // 🔊 Speakers from speakers.json
+  const [speakers, setSpeakers] = useState<string[]>([]);
+  const [speaker, setSpeaker] = useState<string>(""); // currently selected
+  const [speakersLoading, setSpeakersLoading] = useState<boolean>(true);
+  const [speakersError, setSpeakersError] = useState<string | null>(null);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -19,10 +25,66 @@ export default function VoiceQA() {
   // Helper for color highlighting
   const color = (s: string) => (step === s ? "#1976f2" : "#999");
 
+  //
+  // 🔁 Load speakers.json via /api/speakers on mount
+  //
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSpeakers() {
+      try {
+        setSpeakersLoading(true);
+        setSpeakersError(null);
+
+        const resp = await fetch("/api/speakers");
+
+        if (!resp.ok) {
+          throw new Error(`Failed to load speakers: HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+
+        // Expecting an array of strings, e.g. ["neil", "lindsey"]
+        if (!Array.isArray(data) || data.some((s) => typeof s !== "string")) {
+          throw new Error("Speakers response is not an array of strings");
+        }
+
+        if (!cancelled) {
+          setSpeakers(data);
+          // Default to first speaker if none selected yet
+          if (data.length > 0 && !speaker) {
+            setSpeaker(data[0]);
+          }
+        }
+      } catch (err: any) {
+        console.error("Error loading speakers:", err);
+        if (!cancelled) {
+          setSpeakersError(err?.message ?? "Failed to load speakers");
+        }
+      } finally {
+        if (!cancelled) {
+          setSpeakersLoading(false);
+        }
+      }
+    }
+
+    loadSpeakers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [speaker]);
+
   async function start() {
     try {
       if (!navigator.mediaDevices) {
         setStatus("Mic not available.");
+
+        return;
+      }
+
+      if (!speaker) {
+        setStatus("Please select a voice first.");
 
         return;
       }
@@ -106,7 +168,10 @@ export default function VoiceQA() {
           const ttsResp = await fetch("/api/tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: llmAnswer }),
+            body: JSON.stringify({
+              text: llmAnswer,
+              speakerName: speaker, // 👈 send selected speaker to backend
+            }),
           });
 
           if (!ttsResp.ok) {
@@ -185,10 +250,50 @@ export default function VoiceQA() {
         <span style={{ color: color("you") }}>You</span>
       </div>
 
+      {/* Speaker selection */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ fontSize: 14, marginRight: 8 }}>Voice:</label>
+
+        {speakersLoading ? (
+          <span style={{ fontSize: 14, opacity: 0.7 }}>Loading voices…</span>
+        ) : speakersError ? (
+          <span style={{ fontSize: 14, color: "red" }}>
+            Error loading speakers
+          </span>
+        ) : speakers.length === 0 ? (
+          <span style={{ fontSize: 14, opacity: 0.7 }}>
+            No voices available
+          </span>
+        ) : (
+          <select
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              border: "1px solid #ddd",
+              fontSize: 14,
+              color: "green",
+            }}
+            value={speaker}
+            onChange={(e) => setSpeaker(e.target.value)}
+          >
+            {speakers.map((spk) => (
+              <option key={spk} value={spk}>
+                {spk}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
       <p>Press start, ask a question, press stop, hear the answer.</p>
 
       <button
-        disabled={status === "Thinking…" || status === "Speaking…"}
+        disabled={
+          status === "Thinking…" ||
+          status === "Speaking…" ||
+          speakersLoading ||
+          !speaker
+        }
         style={{
           padding: "12px 20px",
           borderRadius: 10,
