@@ -244,10 +244,10 @@ def tts():
         )
         style_wav = style_wav_uri_to_dict(style_wav_val)
 
-        print(f" > Model input: {text}")
-        print(f" > Speaker Idx: {speaker_idx}")
-        print(f" > Language Idx: {language_idx}")
-        print(f" > Speaker WAV: {speaker_wav}")
+        app.logger.info(f"Model input: {text}")
+        app.logger.info(f"Speaker Idx: {speaker_idx}")
+        app.logger.info(f"Language Idx: {language_idx}")
+        app.logger.info(f"Speaker WAV: {speaker_wav}")
 
         wavs = synthesizer.tts(
             text,

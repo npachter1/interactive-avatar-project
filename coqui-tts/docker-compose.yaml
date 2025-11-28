@@ -10,8 +10,18 @@ services:
     volumes:
       - ./coqui-cache:/root/.local/share/tts       # Model cache folder
       - ./coqui-speaker:/data                      # Speaker WAV input folder
-      - ./templates:/app/templates                 # dummt template since using api only
+      - ./templates:/app/templates                 # Dummy template since using API only
       - ./coqui-utils:/app/utils
     environment:
       - COQUI_TOS_AGREED=1                         # Required to run Coqui models
+
+      # === BIG-FILE / HIGH-QUALITY SETTINGS ===
+      - COQUI_TTS_API=1                            # Ensure HTTP API mode
+      - COQUI_TTS_LOAD_BIG=1                       # Preload main model into RAM
+      - COQUI_TTS_VOCODER_LOAD_BIG=1               # Preload vocoder into RAM
+      - COQUI_TTS_MINIMAL_LOADING=0                # Disable lazy/minimal loading
+
+      # CPU tuning (no GPU layers offloaded)
+      - COQUI_TTS_MAX_GPU_LAYERS=0                 # 0 = CPU-only
+      - COQUI_TTS_THREADS=8                        # Adjust for your CPU core count
     restart: unless-stopped

@@ -6,15 +6,19 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
-    const { text } = await req.json();
+    const { text, speaker } = await req.json();
 
     // 🔥 Debug incoming text
     console.log("LLM ROUTE → Incoming user text:", text);
+    console.log("LLM ROUTE → Incoming speaker:", speaker);
+
+    const safeSpeaker =
+      (typeof speaker === "string" && speaker.trim().toLowerCase()) || "neil";
 
     const systemPromptPath = path.join(
       process.cwd(),
       "llm_profiles",
-      "neil.txt",
+      `${safeSpeaker}.txt`,
     );
 
     const systemPrompt = await fs.readFile(systemPromptPath, "utf8");

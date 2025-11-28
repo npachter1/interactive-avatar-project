@@ -139,7 +139,10 @@ export default function VoiceQA() {
           const llmResp = await fetch("/api/llm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: transcript }),
+            body: JSON.stringify({
+              text: transcript,
+              speaker,
+            }),
           });
 
           if (!llmResp.ok) {
