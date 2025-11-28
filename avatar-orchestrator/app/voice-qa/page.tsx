@@ -211,6 +211,7 @@ export default function VoiceQA() {
             background: "#fafafa",
             border: "1px solid #eee",
             fontSize: 14,
+            color: "blue",
           }}
         >
           {questionText && (

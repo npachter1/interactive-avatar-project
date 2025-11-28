@@ -1,3 +1,6 @@
+import { promises as fs } from "fs";
+import path from "path";
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -8,6 +11,14 @@ export async function POST(req: NextRequest) {
     // 🔥 Debug incoming text
     console.log("LLM ROUTE → Incoming user text:", text);
 
+    const systemPromptPath = path.join(
+      process.cwd(),
+      "llm_profiles",
+      "neil.txt",
+    );
+
+    const systemPrompt = await fs.readFile(systemPromptPath, "utf8");
+
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -17,7 +28,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          { role: "system", content: "You are a concise, helpful assistant." },
+          { role: "system", content: systemPrompt },
           { role: "user", content: text || "" },
         ],
       }),

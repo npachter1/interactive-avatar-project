@@ -191,47 +191,75 @@ lock = Lock()
 @app.route("/api/tts", methods=["GET", "POST"])
 def tts():
     with lock:
-        text = request.headers.get("text") or request.values.get("text", "")
-        speaker_idx = request.headers.get("speaker-id") or request.values.get("speaker_id", "")
-        language_idx = request.headers.get("language-id") or request.values.get("language_id", "")
-        style_wav = request.headers.get("style-wav") or request.values.get("style_wav", "")
-        style_wav = style_wav_uri_to_dict(style_wav)
+        # Parse JSON once if present
+        json_data = None
+        if request.is_json:
+            json_data = request.get_json(silent=True) or {}
 
-                # --- Added: normalize params + support speaker_wav ---
-        speaker_wav = request.args.get("speaker_wav")
-        if not speaker_wav and request.is_json:
-            speaker_wav = (request.json or {}).get("speaker_wav")
+        # 1️⃣ TEXT: header → values (query/form) → JSON
+        text = (
+            request.headers.get("text")
+            or request.values.get("text")
+            or (json_data.get("text") if json_data else "")
+        )
 
-        # accept speaker_idx / speaker_id / speaker_name as "speaker_name"
-        speaker_idx = (request.args.get("speaker_idx")
-                       or request.args.get("speaker_id")
-                       or request.args.get("speaker_name"))
-        if not speaker_idx and request.is_json:
-            j = request.json or {}
-            speaker_idx = (j.get("speaker_idx") or j.get("speaker_id") or j.get("speaker_name"))
+        # 2️⃣ SPEAKER_WAV: query/form/JSON
+        speaker_wav = (
+            request.args.get("speaker_wav")
+            or request.values.get("speaker_wav")
+            or (json_data.get("speaker_wav") if json_data else None)
+        )
 
-        # accept language_idx / language_id / language as "language_name"
-        language_idx = (request.args.get("language_idx")
-                        or request.args.get("language_id")
-                        or request.args.get("language"))
-        if not language_idx and request.is_json:
-            j = request.json or {}
-            language_idx = (j.get("language_idx") or j.get("language_id") or j.get("language"))
+        # 3️⃣ SPEAKER IDX (optional, for multi-speaker models)
+        speaker_idx = (
+            request.headers.get("speaker-id")
+            or request.values.get("speaker_id")
+            or request.values.get("speaker_idx")
+            or request.values.get("speaker_name")
+            or (json_data.get("speaker_id") if json_data else None)
+            or (json_data.get("speaker_idx") if json_data else None)
+            or (json_data.get("speaker_name") if json_data else None)
+        )
+        # 👉 IMPORTANT: normalize empty string to None
+        if not speaker_idx:
+            speaker_idx = None
+
+        # 4️⃣ LANGUAGE IDX (optional)
+        language_idx = (
+            request.headers.get("language-id")
+            or request.values.get("language_id")
+            or request.values.get("language_idx")
+            or request.values.get("language")
+            or (json_data.get("language_id") if json_data else None)
+            or (json_data.get("language_idx") if json_data else None)
+            or (json_data.get("language") if json_data else None)
+        )
+        if not language_idx:
+            language_idx = None
+
+        # 5️⃣ STYLE_WAV (if you use GST)
+        style_wav_val = (
+            request.headers.get("style-wav")
+            or request.values.get("style_wav", "")
+        )
+        style_wav = style_wav_uri_to_dict(style_wav_val)
 
         print(f" > Model input: {text}")
         print(f" > Speaker Idx: {speaker_idx}")
         print(f" > Language Idx: {language_idx}")
+        print(f" > Speaker WAV: {speaker_wav}")
+
         wavs = synthesizer.tts(
             text,
             speaker_name=speaker_idx,
             language_name=language_idx,
             style_wav=style_wav,
-            speaker_wav=speaker_wav
+            speaker_wav=speaker_wav,
         )
         out = io.BytesIO()
         synthesizer.save_wav(wavs, out)
-    return send_file(out, mimetype="audio/wav")
 
+    return send_file(out, mimetype="audio/wav")
 
 # Basic MaryTTS compatibility layer
 
