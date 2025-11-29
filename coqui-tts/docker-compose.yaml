@@ -24,4 +24,6 @@ services:
       # CPU tuning (no GPU layers offloaded)
       - COQUI_TTS_MAX_GPU_LAYERS=0                 # 0 = CPU-only
       - COQUI_TTS_THREADS=8                        # Adjust for your CPU core count
+
+      - COQUI_SPEAKERS_FILE=/data/speakers.json
     restart: unless-stopped

@@ -31,14 +31,13 @@ export async function POST(req: NextRequest) {
 
     // This path must match how the Coqui container sees files
     // e.g. docker volume: ./coqui-tts/coqui-speaker:/data  → /data/neil.wav
-    const speakerWavPath = `/data/${speakerName}.wav`;
+    // const speakerWavPath = `/data/${speakerName}.wav`;
 
     // 3️⃣ Build JSON payload for Coqui
     const coquiPayload = {
       text: textForTTS,
       language_id: COQUI_LANGUAGE_ID,
-      speaker_wav: speakerWavPath,
-      // speaker_id not needed for XTTS reference cloning
+      speaker_id: speakerName,
     };
 
     console.log("TTS ROUTE → POSTing to Coqui:", COQUI_URL);
